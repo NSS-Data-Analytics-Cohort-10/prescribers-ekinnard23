@@ -22,15 +22,53 @@ FROM zip_fips
 1.
     a. Which prescriber had the highest total number of claims 
 	(totaled over all drugs)? Report the npi and the total number of claims.
-SELECT total_claim_count
+SELECT *
+FROM prescription;
+
+SELECT npi,
+	SUM(total_claim_count) AS total_claim
+FROM prescription
+GROUP BY npi
+ORDER BY total_claim DESC;
 	
     
     b. Repeat the above, but this time report the nppes_provider_first_name, nppes_provider_last_org_name,  specialty_description, and the total number of claims.
 
-2. 
-    a. Which specialty had the most total number of claims (totaled over all drugs)?
+
+SELECT npi,
+	SUM(total_claim_count) AS total_claim,
+	nppes_provider_first_name AS provider_first_name,
+	nppes_provider_last_org_name AS provider_last_name,
+	specialty_description
+FROM prescription
+INNER JOIN prescriber
+USING (npi)
+GROUP BY npi, provider_first_name,provider_last_name,specialty_description
+ORDER BY total_claim DESC;
+2.  a. Which specialty had the most total number of claims (totaled over all drugs)?
+	
+SELECT 
+	SUM(total_claim_count) AS total_claim,
+	specialty_description
+FROM prescription
+INNER JOIN prescriber
+USING (npi)
+GROUP BY specialty_description
+ORDER BY total_claim DESC;
+
 
     b. Which specialty had the most total number of claims for opioids?
+SELECT specialty_description,
+	opioid_drug_flag,
+	SUM(total_claim_count) AS total_claims
+FROM prescriber
+INNER JOIN prescription
+USING (npi)
+	INNER JOIN drug
+	USING (drug_name)
+WHERE opioid_drug_flag = 'Y'
+GROUP BY opioid_drug_flag,specialty_description
+ORDER BY total_claims DESC;
 
     c. **Challenge Question:** Are there any specialties that appear in the prescriber table that have no associated prescriptions in the prescription table?
 
@@ -38,6 +76,16 @@ SELECT total_claim_count
 
 3. 
     a. Which drug (generic_name) had the highest total drug cost?
+	
+SELECT SUM(total_drug_cost) AS drug_cost,
+	generic_name
+FROM prescription
+INNER JOIN drug
+USING (drug_name)
+GROUP BY generic_name
+ORDER BY drug_cost DESC;
+
+
 
     b. Which drug (generic_name) has the hightest total cost per day? **Bonus: Round your cost per day column to 2 decimal places. Google ROUND to see how this works.**
 
