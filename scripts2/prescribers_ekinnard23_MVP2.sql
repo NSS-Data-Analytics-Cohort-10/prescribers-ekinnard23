@@ -2,6 +2,9 @@ SELECT *
 FROM cbsa 
 
 SELECT *
+FROM drug
+
+SELECT *
 FROM fips_county
 
 SELECT *
@@ -88,11 +91,38 @@ ORDER BY drug_cost DESC;
 
 
     b. Which drug (generic_name) has the hightest total cost per day? **Bonus: Round your cost per day column to 2 decimal places. Google ROUND to see how this works.**
+	
+SELECT ROUND(SUM(total_drug_cost)/365,2) AS drug_cost_per_day,
+	generic_name
+FROM prescription
+INNER JOIN drug
+USING (drug_name)
+GROUP BY generic_name
+ORDER BY drug_cost_per_day DESC;
 
 4. 
     a. For each drug in the drug table, return the drug name and then a column named 'drug_type' which says 'opioid' for drugs which have opioid_drug_flag = 'Y', says 'antibiotic' for those drugs which have antibiotic_drug_flag = 'Y', and says 'neither' for all other drugs.
 
+SELECT drug_name,
+	CASE WHEN opioid_drug_flag = 'Y' THEN 'opioid'
+	WHEN antibiotic_drug_flag = 'Y' THEN 'antibiotics'
+	ELSE 'neither' END AS drug_type
+FROM drug
+
+
+
     b. Building off of the query you wrote for part a, determine whether more was spent (total_drug_cost) on opioids or on antibiotics. Hint: Format the total costs as MONEY for easier comparision.
+	
+SELECT SUM(total_drug_cost)::money, drug_name,
+	CASE WHEN opioid_drug_flag = 'Y' THEN 'opioid cost'
+	WHEN antibiotic_drug_flag = 'Y' THEN 'antibiotic cost'
+	ELSE 'neither' END AS drug_type
+FROM drug
+INNER JOIN prescription
+USING (drug_name)
+GROUP BY drug_name, opioid_drug_flag, antibiotic_drug_flag, total_drug_cost
+
+
 
 5. 
     a. How many CBSAs are in Tennessee? **Warning:** The cbsa table contains information for all states, not just Tennessee.
