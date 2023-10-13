@@ -34,7 +34,7 @@ FROM prescription
 GROUP BY npi
 ORDER BY total_claim DESC;
 
---1881634483
+--1881634483 - 99707
     
     b. Repeat the above, but this time report the nppes_provider_first_name, nppes_provider_last_org_name,  specialty_description, and the total number of claims.
 
@@ -50,7 +50,7 @@ USING (npi)
 GROUP BY npi, provider_first_name,provider_last_name,specialty_description
 ORDER BY total_claim DESC;
 
---Bruce Pendley
+--Bruce Pendley - Family Practice
 
 2.  a. Which specialty had the most total number of claims (totaled over all drugs)?
 	
