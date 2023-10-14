@@ -131,14 +131,26 @@ WHERE opioid_drug_flag = 'Y'
 GROUP BY drug_name,total_drug_cost 
 ORDER BY total_drug_cost DESC
 
-SELECT SUM(total_drug_cost)::money, 
-	drug_name
+SELECT SUM(total_drug_cost)::money, drug_name	
 FROM prescription
 INNER JOIN drug
 USING (drug_name)
 WHERE antibiotic_drug_flag = 'Y' 
 GROUP BY drug_name,total_drug_cost 
 ORDER BY total_drug_cost DESC
+	 
+SELECT 
+	drug_name,
+	(SELECT SUM(total_drug_cost)OVER()PARTITION BY drug_name)::money) 
+	 FROM prescription
+	 WHERE antibiotic_drug_flag = 'Y' 	
+FROM prescription
+INNER JOIN drug
+USING (drug_name)
+WHERE antibiotic_drug_flag = 'Y' 
+GROUP BY drug_name,total_drug_cost 
+ORDER BY total_drug_cost DESC
+
 
 --Exported - Opioids 3 to 1
 
@@ -180,12 +192,37 @@ ORDER BY population DESC;
 
 6. 
     a. Find all rows in the prescription table where total_claims is at least 3000. Report the drug_name and the total_claim_count.
+SELECT drug_name, 
+		total_claim_count
+FROM prescription
+WHERE total_claim_count >= 3000
 	
 	
 
     b. For each instance that you found in part a, add a column that indicates whether the drug is an opioid.
 
+SELECT drug_name, 
+		total_claim_count,
+		opioid_drug_flag
+FROM prescription
+INNER JOIN drug
+USING (drug_name)
+WHERE total_claim_count >= 3000
+
+
     c. Add another column to you answer from the previous part which gives the prescriber first and last name associated with each row.
+	
+SELECT drug_name, 
+		total_claim_count,
+		opioid_drug_flag,
+		prescriber.nppes_provider_first_name AS provider_first_name,
+		prescriber.nppes_provider_last_org_name AS provider_last_name
+FROM prescription
+INNER JOIN drug
+USING (drug_name)
+FULL JOIN prescriber
+USING (npi)
+WHERE total_claim_count >= 3000
 
 7. The goal of this exercise is to generate a full list of all pain management specialists in Nashville and the number of claims they had for each opioid. **Hint:** The results from all 3 parts will have 637 rows.
 
