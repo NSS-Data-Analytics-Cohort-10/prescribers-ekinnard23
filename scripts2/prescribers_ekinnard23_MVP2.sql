@@ -165,13 +165,13 @@ WHERE cbsaname ILIKE '%TN%'
 	
 SELECT cbsaname,
 	cbsa,
-	SUM(population) AS population
+	SUM(population) AS population_count
 FROM cbsa
 INNER JOIN population
 USING (fipscounty)
 GROUP BY cbsaname,
 	cbsa
-ORDER BY population DESC;
+ORDER BY population_count DESC;
 
 --Biggest - Nashville ; Smallest - Morristown
 
@@ -192,7 +192,8 @@ ORDER BY population DESC;
 
 6. 
     a. Find all rows in the prescription table where total_claims is at least 3000. Report the drug_name and the total_claim_count.
-SELECT drug_name, 
+	
+SELECT drug_name,
 		total_claim_count
 FROM prescription
 WHERE total_claim_count >= 3000
@@ -202,19 +203,22 @@ WHERE total_claim_count >= 3000
     b. For each instance that you found in part a, add a column that indicates whether the drug is an opioid.
 
 SELECT drug_name, 
-		total_claim_count,
-		opioid_drug_flag
+		CASE WHEN opioid_drug_flag ='Y' THEN 'opioid'
+		ELSE 'not an opioid' END AS drug_type,
+		SUM(total_claim_count)	
 FROM prescription
 INNER JOIN drug
 USING (drug_name)
 WHERE total_claim_count >= 3000
+GROUP BY drug_name, drug_type
 
 
     c. Add another column to you answer from the previous part which gives the prescriber first and last name associated with each row.
 	
 SELECT drug_name, 
-		total_claim_count,
-		opioid_drug_flag,
+		SUM(total_claim_count),
+		CASE WHEN opioid_drug_flag ='Y' THEN 'opioid'
+		ELSE 'not an opioid' END AS drug_type,
 		prescriber.nppes_provider_first_name AS provider_first_name,
 		prescriber.nppes_provider_last_org_name AS provider_last_name
 FROM prescription
@@ -223,6 +227,7 @@ USING (drug_name)
 FULL JOIN prescriber
 USING (npi)
 WHERE total_claim_count >= 3000
+GROUP BY drug_name, drug_type, provider_first_name, provider_last_name
 
 7. The goal of this exercise is to generate a full list of all pain management specialists in Nashville and the number of claims they had for each opioid. **Hint:** The results from all 3 parts will have 637 rows.
 
